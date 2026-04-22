@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>50 Supply Chain KPIs — Reference & Implementation Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --accent3: #d2a8ff;
+    --accent4: #ffa657;
+    --accent5: #ff7b72;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --tag-bg: #1f6feb22;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .repo-header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px 0;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .repo-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .repo-nav span { color: var(--accent); font-weight: 600; }
+  .repo-nav .sep { opacity: 0.4; }
+
+  .repo-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: none;
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    cursor: default;
+    white-space: nowrap;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: #f78166;
+  }
+
+  .tab svg { width: 14px; height: 14px; vertical-align: middle; margin-right: 4px; }
+
+  /* ── MAIN LAYOUT ── */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: sticky;
+    top: 100px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .sidebar-link {
+    display: block;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .sidebar-link:hover, .sidebar-link.active {
+    background: var(--tag-bg);
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  .sidebar-count {
+    float: right;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11px;
+    padding: 1px 7px;
+    color: var(--muted);
+  }
+
+  /* ── README AREA ── */
+  .readme {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .readme-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .readme-bar svg { width: 16px; height: 16px; color: var(--accent); }
+  .readme-bar strong { color: var(--text); }
+
+  .readme-body { padding: 32px; }
+
+  /* ── INTRO ── */
+  .intro-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .intro-subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    max-width: 680px;
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border: 1px solid;
+  }
+
+  .badge-blue { background: #1f6feb22; border-color: #1f6feb55; color: var(--accent); }
+  .badge-green { background: #2ea04322; border-color: #2ea04355; color: var(--accent2); }
+  .badge-purple { background: #8957e522; border-color: #8957e555; color: var(--accent3); }
+  .badge-orange { background: #db610022; border-color: #db610055; color: var(--accent4); }
+
+  /* ── CATEGORY SECTION ── */
+  .category-section { margin-bottom: 48px; }
+
+  .category-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cat-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── KPI CARD ── */
+  .kpi-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .kpi-card:hover { border-color: var(--accent); }
+
+  .kpi-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .kpi-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    flex-shrink: 0;
+    min-width: 36px;
+    text-align: center;
+  }
+
+  .kpi-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .kpi-toggle {
+    color: var(--muted);
+    font-size: 18px;
+    transition: transform 0.25s;
+    line-height: 1;
+  }
+
+  .kpi-card.open .kpi-toggle { transform: rotate(90deg); }
+
+  .kpi-body {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 18px;
+    background: var(--surface);
+  }
+
+  .kpi-card.open .kpi-body { display: block; }
+
+  .kpi-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .meta-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+
+  .meta-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .meta-value {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* ── CODE TABS ── */
+  .code-section { margin-top: 20px; }
+
+  .code-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .code-tabs-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+
+  .code-tab-btn {
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: color 0.15s;
+    letter-spacing: 0.04em;
+  }
+
+  .code-tab-btn:hover { color: var(--text); }
+  .code-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .code-tab-btn.py.active { color: #4ec9b0; border-bottom-color: #4ec9b0; }
+  .code-tab-btn.sql.active { color: var(--accent4); border-bottom-color: var(--accent4); }
+  .code-tab-btn.xl.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+  .code-tab-pane { display: none; }
+  .code-tab-pane.active { display: block; }
+
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 16px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+    color: #e6edf3;
+  }
+
+  /* syntax colors */
+  .kw { color: #ff7b72; }        /* keyword */
+  .fn { color: #d2a8ff; }        /* function */
+  .str { color: #a5d6ff; }       /* string */
+  .num { color: #79c0ff; }       /* number */
+  .cmt { color: #8b949e; font-style: italic; } /* comment */
+  .op { color: #ff7b72; }        /* operator */
+  .var { color: #ffa657; }       /* variable */
+  .cls { color: #f0883e; }       /* class/type */
+  .sql-kw { color: #ff7b72; }    /* SQL keyword */
+  .sql-fn { color: #d2a8ff; }    /* SQL function */
+  .sql-col { color: #79c0ff; }   /* SQL column */
+  .xl-fn { color: #3fb950; }     /* Excel formula */
+  .xl-ref { color: #79c0ff; }    /* Excel cell ref */
+  .xl-str { color: #a5d6ff; }    /* Excel string */
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 32px 0;
+  }
+
+  /* ── FOOTER ── */
+  .readme-footer {
+    padding: 16px 18px;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="repo-header">
+  <div class="repo-nav">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="color:var(--muted)"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8Z"/></svg>
+    supply-chain-analytics /
+    <span>50-kpis</span>
+    <span class="sep">·</span>
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="var(--muted)"><path d="M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 0 1 0 2.474l-5.026 5.026a1.75 1.75 0 0 1-2.474 0l-6.25-6.25A1.752 1.752 0 0 1 1 7.775Zm1.5 0c0 .066.026.13.073.177l6.25 6.25a.25.25 0 0 0 .354 0l5.025-5.025a.25.25 0 0 0 0-.354l-6.25-6.25a.25.25 0 0 0-.177-.073H2.75a.25.25 0 0 0-.25.25ZM6 5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/></svg>
+    README
+  </div>
+  <div class="repo-tabs">
+    <div class="tab active">📄 README.md</div>
+    <div class="tab">📁 Code</div>
+    <div class="tab">⬆ 50 KPIs</div>
+    <div class="tab">⭐ Star</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">Categories</div>
+    <a class="sidebar-link active" onclick="scrollTo('cat1')">Service Level <span class="sidebar-count">10</span></a>
+    <a class="sidebar-link" onclick="scrollTo('cat2')">Inventory <span class="sidebar-count">10</span></a>
+    <a class="sidebar-link" onclick="scrollTo('cat3')">Forecasting & Planning <span class="sidebar-count">10</span></a>
+    <a class="sidebar-link" onclick="scrollTo('cat4')">Procurement & Supplier <span class="sidebar-count">10</span></a>
+    <a class="sidebar-link" onclick="scrollTo('cat5')">Warehouse & Logistics <span class="sidebar-count">10</span></a>
+  </aside>
+
+  <!-- README -->
+  <main>
+    <div class="readme">
+      <div class="readme-bar">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 2.75C0 1.784.784 1 1.75 1h12.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0 1 14.25 15H1.75A1.75 1.75 0 0 1 0 13.25Zm1.75-.25a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V2.75a.25.25 0 0 0-.25-.25ZM7.25 8a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h3.5A.75.75 0 0 1 7.25 8Zm0 2.5a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h3.5a.75.75 0 0 1 .75.75Zm0-5a.75.75 0 0 1-.75.75H3A.75.75 0 0 1 3 4h3.5a.75.75 0 0 1 .75.75Zm5 5a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1 0-1.5h3.5a.75.75 0 0 1 .75.75Zm0-2.5a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1 0-1.5h3.5a.75.75 0 0 1 .75.75Zm0-2.5a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1 0-1.5h3.5a.75.75 0 0 1 .75.75Z"/></svg>
+        <strong>README.md</strong>
+        <span style="margin-left:auto;font-size:12px">50 KPIs · 5 categories · Python · SQL · Excel</span>
+      </div>
+
+      <div class="readme-body">
+
+        <h1 class="intro-title">📦 50 Supply Chain KPIs</h1>
+        <p class="intro-subtitle">A structured reference for analytics projects, dashboards, and business reviews. Every KPI includes its definition, formula, business meaning, and ready-to-use implementations in Python, SQL, and Excel.</p>
+
+        <div class="badges">
+          <span class="badge badge-blue">🐍 Python</span>
+          <span class="badge badge-orange">🗄️ SQL</span>
+          <span class="badge badge-green">📊 Excel</span>
+          <span class="badge badge-purple">50 KPIs</span>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- ══════════════════════════════════════════
+             CAT 1 — SERVICE LEVEL
+        ══════════════════════════════════════════ -->
+        <section class="category-section" id="cat1">
+          <h2 class="category-title">
+            <span class="cat-dot" style="background:#58a6ff"></span>
+            1. Service Level &amp; Customer Fulfillment KPIs
+          </h2>
+
+          <!-- KPI 1 -->
+          <div class="kpi-card" onclick="toggle(this)">
+            <div class="kpi-header">
+              <span class="kpi-number">#01</span>
+              <span class="kpi-name">On-Time Delivery (OTD)</span>
+              <span class="kpi-toggle">›</span>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-meta">
+                <div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Percentage of orders delivered on or before the promised date.</div></div>
+                <div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(On-time deliveries / Total deliveries) × 100</div></div>
+                <div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Measures delivery reliability and customer service quality.</div></div>
+              </div>
+              <div class="code-section">
+                <div class="code-label">How to calculate</div>
+                <div class="code-tabs-nav">
+                  <button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button>
+                  <button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button>
+                  <button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button>
+                </div>
+                <div class="code-tab-pane active" data-lang="py">
+<div class="code-block"><span class="cmt"># df has columns: order_id, promised_date, actual_delivery_date</span>
+<span class="var">df</span>[<span class="str">'on_time'</span>] = <span class="var">df</span>[<span class="str">'actual_delivery_date'</span>] <= <span class="var">df</span>[<span class="str">'promised_date'</span>]
+<span class="var">otd</span> = <span class="var">df</span>[<span class="str">'on_time'</span>].<span class="fn">mean</span>() * <span class="num">100</span>
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"OTD: {otd:.1f}%"</span>)</div>
+                </div>
+                <div class="code-tab-pane" data-lang="sql">
+<div class="code-block"><span class="sql-kw">SELECT</span>
+  <span class="sql-fn">ROUND</span>(
+    <span class="sql-fn">100.0</span> * <span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span> <span class="sql-col">actual_delivery_date</span> <= <span class="sql-col">promised_date</span> <span class="sql-kw">THEN</span> <span class="num">1</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>)
+    / <span class="sql-fn">COUNT</span>(*), <span class="num">2</span>
+  ) <span class="sql-kw">AS</span> otd_pct
+<span class="sql-kw">FROM</span> orders;</div>
+                </div>
+                <div class="code-tab-pane" data-lang="xl">
+<div class="code-block"><span class="cmt">| A (promised_date) | B (actual_delivery) | C (on_time?) | D (OTD %) |</span>
+
+<span class="cmt">C2:</span> <span class="xl-fn">=IF(</span><span class="xl-ref">B2</span><=<span class="xl-ref">A2</span>,<span class="xl-str">"Yes"</span>,<span class="xl-str">"No"</span><span class="xl-fn">)</span>
+<span class="cmt">D2:</span> <span class="xl-fn">=COUNTIF(</span><span class="xl-ref">C2:C100</span>,<span class="xl-str">"Yes"</span><span class="xl-fn">)/COUNTA(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)*100</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 2 -->
+          <div class="kpi-card" onclick="toggle(this)">
+            <div class="kpi-header">
+              <span class="kpi-number">#02</span>
+              <span class="kpi-name">In-Full Delivery (IF)</span>
+              <span class="kpi-toggle">›</span>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-meta">
+                <div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Percentage of deliveries shipped with complete quantities requested.</div></div>
+                <div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Orders delivered in full / Total orders) × 100</div></div>
+                <div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Shows how well supply meets demand without shortages.</div></div>
+              </div>
+              <div class="code-section">
+                <div class="code-label">How to calculate</div>
+                <div class="code-tabs-nav">
+                  <button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button>
+                  <button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button>
+                  <button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button>
+                </div>
+                <div class="code-tab-pane active" data-lang="py">
+<div class="code-block"><span class="cmt"># df: order_id, qty_ordered, qty_delivered</span>
+<span class="var">df</span>[<span class="str">'in_full'</span>] = <span class="var">df</span>[<span class="str">'qty_delivered'</span>] >= <span class="var">df</span>[<span class="str">'qty_ordered'</span>]
+<span class="var">if_rate</span> = <span class="var">df</span>[<span class="str">'in_full'</span>].<span class="fn">mean</span>() * <span class="num">100</span></div>
+                </div>
+                <div class="code-tab-pane" data-lang="sql">
+<div class="code-block"><span class="sql-kw">SELECT</span>
+  <span class="sql-fn">ROUND</span>(<span class="num">100.0</span> * <span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span> <span class="sql-col">qty_delivered</span> >= <span class="sql-col">qty_ordered</span> <span class="sql-kw">THEN</span> <span class="num">1</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>) / <span class="sql-fn">COUNT</span>(*), <span class="num">2</span>)
+  <span class="sql-kw">AS</span> in_full_pct
+<span class="sql-kw">FROM</span> orders;</div>
+                </div>
+                <div class="code-tab-pane" data-lang="xl">
+<div class="code-block"><span class="cmt">| A (qty_ordered) | B (qty_delivered) | C (in_full?) | D (IF %) |</span>
+
+<span class="cmt">C2:</span> <span class="xl-fn">=IF(</span><span class="xl-ref">B2</span>>=<span class="xl-ref">A2</span>,<span class="xl-str">"Yes"</span>,<span class="xl-str">"No"</span><span class="xl-fn">)</span>
+<span class="cmt">D2:</span> <span class="xl-fn">=COUNTIF(</span><span class="xl-ref">C2:C100</span>,<span class="xl-str">"Yes"</span><span class="xl-fn">)/COUNTA(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)*100</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 3 -->
+          <div class="kpi-card" onclick="toggle(this)">
+            <div class="kpi-header">
+              <span class="kpi-number">#03</span>
+              <span class="kpi-name">OTIF (On-Time In-Full)</span>
+              <span class="kpi-toggle">›</span>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-meta">
+                <div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Percentage of orders delivered both on time and in full.</div></div>
+                <div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Orders on time AND in full / Total orders) × 100</div></div>
+                <div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Most important end-to-end service KPI.</div></div>
+              </div>
+              <div class="code-section">
+                <div class="code-label">How to calculate</div>
+                <div class="code-tabs-nav">
+                  <button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button>
+                  <button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button>
+                  <button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button>
+                </div>
+                <div class="code-tab-pane active" data-lang="py">
+<div class="code-block"><span class="var">df</span>[<span class="str">'otif'</span>] = (
+    (<span class="var">df</span>[<span class="str">'actual_delivery_date'</span>] <= <span class="var">df</span>[<span class="str">'promised_date'</span>]) &
+    (<span class="var">df</span>[<span class="str">'qty_delivered'</span>] >= <span class="var">df</span>[<span class="str">'qty_ordered'</span>])
+)
+<span class="var">otif</span> = <span class="var">df</span>[<span class="str">'otif'</span>].<span class="fn">mean</span>() * <span class="num">100</span></div>
+                </div>
+                <div class="code-tab-pane" data-lang="sql">
+<div class="code-block"><span class="sql-kw">SELECT</span>
+  <span class="sql-fn">ROUND</span>(<span class="num">100.0</span> * <span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span>
+    <span class="sql-col">actual_delivery_date</span> <= <span class="sql-col">promised_date</span>
+    <span class="sql-kw">AND</span> <span class="sql-col">qty_delivered</span> >= <span class="sql-col">qty_ordered</span>
+  <span class="sql-kw">THEN</span> <span class="num">1</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>) / <span class="sql-fn">COUNT</span>(*), <span class="num">2</span>) <span class="sql-kw">AS</span> otif_pct
+<span class="sql-kw">FROM</span> orders;</div>
+                </div>
+                <div class="code-tab-pane" data-lang="xl">
+<div class="code-block"><span class="cmt">| A (promised) | B (actual) | C (qty_ord) | D (qty_del) | E (OTIF?) | F (OTIF%) |</span>
+
+<span class="cmt">E2:</span> <span class="xl-fn">=IF(AND(</span><span class="xl-ref">B2</span><=<span class="xl-ref">A2</span>,<span class="xl-ref">D2</span>>=<span class="xl-ref">C2</span><span class="xl-fn">)</span>,<span class="xl-str">"Yes"</span>,<span class="xl-str">"No"</span><span class="xl-fn">)</span>
+<span class="cmt">F2:</span> <span class="xl-fn">=COUNTIF(</span><span class="xl-ref">E2:E100</span>,<span class="xl-str">"Yes"</span><span class="xl-fn">)/COUNTA(</span><span class="xl-ref">E2:E100</span><span class="xl-fn">)*100</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 4 -->
+          <div class="kpi-card" onclick="toggle(this)">
+            <div class="kpi-header"><span class="kpi-number">#04</span><span class="kpi-name">Order Fill Rate</span><span class="kpi-toggle">›</span></div>
+            <div class="kpi-body">
+              <div class="kpi-meta">
+                <div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Percentage of customer demand fulfilled immediately from available stock.</div></div>
+                <div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Units shipped immediately / Units ordered) × 100</div></div>
+                <div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Reflects product availability and service responsiveness.</div></div>
+              </div>
+              <div class="code-section"><div class="code-label">How to calculate</div>
+                <div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div>
+                <div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">fill_rate</span> = (<span class="var">df</span>[<span class="str">'units_shipped_immediately'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'units_ordered'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div>
+                <div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span> * <span class="sql-fn">SUM</span>(<span class="sql-col">units_shipped_immediately</span>) / <span class="sql-fn">SUM</span>(<span class="sql-col">units_ordered</span>), <span class="num">2</span>) <span class="sql-kw">AS</span> fill_rate_pct
+<span class="sql-kw">FROM</span> order_lines;</div></div>
+                <div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (units_shipped_immed) | B (units_ordered) |</span>
+<span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 5 -->
+          <div class="kpi-card" onclick="toggle(this)">
+            <div class="kpi-header"><span class="kpi-number">#05</span><span class="kpi-name">Perfect Order Rate</span><span class="kpi-toggle">›</span></div>
+            <div class="kpi-body">
+              <div class="kpi-meta">
+                <div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% orders delivered: on time, in full, damage-free, with correct documentation.</div></div>
+                <div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Perfect orders / Total orders) × 100</div></div>
+                <div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Captures end-to-end execution quality across all dimensions.</div></div>
+              </div>
+              <div class="code-section"><div class="code-label">How to calculate</div>
+                <div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div>
+                <div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'perfect'</span>] = (
+    <span class="var">df</span>[<span class="str">'on_time'</span>] & <span class="var">df</span>[<span class="str">'in_full'</span>] &
+    <span class="var">df</span>[<span class="str">'no_damage'</span>] & <span class="var">df</span>[<span class="str">'correct_docs'</span>]
+)
+<span class="var">por</span> = <span class="var">df</span>[<span class="str">'perfect'</span>].<span class="fn">mean</span>() * <span class="num">100</span></div></div>
+                <div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span> * <span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span>
+    <span class="sql-col">on_time</span>=<span class="num">1</span> <span class="sql-kw">AND</span> <span class="sql-col">in_full</span>=<span class="num">1</span> <span class="sql-kw">AND</span> <span class="sql-col">no_damage</span>=<span class="num">1</span> <span class="sql-kw">AND</span> <span class="sql-col">correct_docs</span>=<span class="num">1</span>
+  <span class="sql-kw">THEN</span> <span class="num">1</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>) / <span class="sql-fn">COUNT</span>(*), <span class="num">2</span>) <span class="sql-kw">AS</span> por
+<span class="sql-kw">FROM</span> orders;</div></div>
+                <div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (on_time) | B (in_full) | C (no_damage) | D (correct_docs) | E (perfect?) |</span>
+<span class="cmt">E2:</span> <span class="xl-fn">=IF(AND(</span><span class="xl-ref">A2</span>=<span class="xl-str">"Yes"</span>,<span class="xl-ref">B2</span>=<span class="xl-str">"Yes"</span>,<span class="xl-ref">C2</span>=<span class="xl-str">"Yes"</span>,<span class="xl-ref">D2</span>=<span class="xl-str">"Yes"</span><span class="xl-fn">)</span>,<span class="xl-str">"Yes"</span>,<span class="xl-str">"No"</span><span class="xl-fn">)</span>
+<span class="xl-fn">=COUNTIF(</span><span class="xl-ref">E2:E100</span>,<span class="xl-str">"Yes"</span><span class="xl-fn">)/COUNTA(</span><span class="xl-ref">E2:E100</span><span class="xl-fn">)*100</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 6 -->
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#06</span><span class="kpi-name">Backorder Rate</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of order lines/units that could not be fulfilled on the requested date.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Backordered units / Total ordered units) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Highlights stock shortages and demand planning gaps.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">backorder_rate</span> = (<span class="var">df</span>[<span class="str">'backordered_units'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'total_ordered_units'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">backordered_units</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">total_ordered_units</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> backorder_rate
+<span class="sql-kw">FROM</span> order_lines;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=backordered, B=total ordered)</span></div></div></div></div></div>
+
+          <!-- KPI 7 -->
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#07</span><span class="kpi-name">Stockout Rate</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Frequency at which inventory is unavailable when needed.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Stockout events / Total demand events) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Measures product unavailability and lost sales risk.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">stockout_rate</span> = (<span class="var">df</span>[<span class="str">'stockout_events'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'demand_events'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">stockout_flag</span>)/<span class="sql-fn">COUNT</span>(*),<span class="num">2</span>) <span class="sql-kw">AS</span> stockout_rate
+<span class="sql-kw">FROM</span> demand_events;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=COUNTIF(</span><span class="xl-ref">A2:A100</span>,<span class="xl-str">"Stockout"</span><span class="xl-fn">)/COUNTA(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)*100</span></div></div></div></div></div>
+
+          <!-- KPI 8 -->
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#08</span><span class="kpi-name">Case Fill Rate</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of cases shipped vs cases ordered.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Cases shipped / Cases ordered) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Common KPI in FMCG and warehouse distribution.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">cfr</span> = (<span class="var">df</span>[<span class="str">'cases_shipped'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'cases_ordered'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">cases_shipped</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">cases_ordered</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> case_fill_rate
+<span class="sql-kw">FROM</span> shipments;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=shipped, B=ordered)</span></div></div></div></div></div>
+
+          <!-- KPI 9 -->
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#09</span><span class="kpi-name">Customer Order Cycle Time</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Average time from customer order placement to delivery.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Delivery date − Order date</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Measures speed of customer fulfillment.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'cycle_days'</span>] = (<span class="var">df</span>[<span class="str">'delivery_date'</span>] - <span class="var">df</span>[<span class="str">'order_date'</span>]).<span class="fn">dt</span>.<span class="fn">days</span>
+<span class="var">avg_cycle</span> = <span class="var">df</span>[<span class="str">'cycle_days'</span>].<span class="fn">mean</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">AVG</span>(<span class="sql-fn">DATEDIFF</span>(<span class="sql-col">delivery_date</span>, <span class="sql-col">order_date</span>)) <span class="sql-kw">AS</span> avg_cycle_days
+<span class="sql-kw">FROM</span> orders;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (order_date) | B (delivery_date) | C (days) |</span>
+<span class="cmt">C2:</span> <span class="xl-fn">=</span><span class="xl-ref">B2</span>-<span class="xl-ref">A2</span>
+<span class="xl-fn">=AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span></div></div></div></div></div>
+
+          <!-- KPI 10 -->
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#10</span><span class="kpi-name">Returns Rate</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of shipped orders or units returned by customers.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Returned units / Delivered units) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Indicates quality, fulfillment, or product fit issues.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">returns_rate</span> = (<span class="var">df</span>[<span class="str">'returned_units'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'delivered_units'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">returned_units</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">delivered_units</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> returns_rate
+<span class="sql-kw">FROM</span> shipments;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=returned, B=delivered)</span></div></div></div></div></div>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             CAT 2 — INVENTORY
+        ══════════════════════════════════════════ -->
+        <section class="category-section" id="cat2">
+          <h2 class="category-title"><span class="cat-dot" style="background:#3fb950"></span>2. Inventory KPIs</h2>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#11</span><span class="kpi-name">Inventory Turnover</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Number of times inventory is sold or used over a period.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">COGS / Average Inventory</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Measures inventory efficiency and working capital use.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">avg_inv</span> = (<span class="var">df</span>[<span class="str">'opening_inv'</span>] + <span class="var">df</span>[<span class="str">'closing_inv'</span>]) / <span class="num">2</span>
+<span class="var">turnover</span> = <span class="var">df</span>[<span class="str">'cogs'</span>] / <span class="var">avg_inv</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(<span class="sql-col">cogs</span>) / <span class="sql-fn">AVG</span>((<span class="sql-col">opening_inv</span>+<span class="sql-col">closing_inv</span>)/<span class="num">2</span>), <span class="num">2</span>) <span class="sql-kw">AS</span> inv_turnover
+<span class="sql-kw">FROM</span> inventory_summary;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (COGS) | B (avg_inventory) |</span>
+<span class="xl-fn">=</span><span class="xl-ref">A2</span><span class="xl-fn">/</span><span class="xl-ref">B2</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#12</span><span class="kpi-name">Days Inventory Outstanding (DIO)</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Average days inventory stays in stock before being sold.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Average Inventory / COGS) × Days in period</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Shows how long cash is tied up in inventory.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">dio</span> = (<span class="var">avg_inv</span> / <span class="var">df</span>[<span class="str">'cogs'</span>]) * <span class="num">365</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="sql-fn">AVG</span>((<span class="sql-col">opening_inv</span>+<span class="sql-col">closing_inv</span>)/<span class="num">2</span>) / <span class="sql-fn">SUM</span>(<span class="sql-col">cogs</span>) * <span class="num">365</span>, <span class="num">1</span>) <span class="sql-kw">AS</span> dio
+<span class="sql-kw">FROM</span> inventory_summary;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (avg_inventory) | B (COGS) |</span>
+<span class="xl-fn">=(</span><span class="xl-ref">A2</span><span class="xl-fn">/</span><span class="xl-ref">B2</span><span class="xl-fn">)*365</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#13</span><span class="kpi-name">Inventory Accuracy</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Degree to which system inventory matches physical inventory.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Correct records / Total records checked) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Critical for planning, fulfillment, and warehouse control.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'match'</span>] = <span class="var">df</span>[<span class="str">'system_qty'</span>] == <span class="var">df</span>[<span class="str">'physical_qty'</span>]
+<span class="var">accuracy</span> = <span class="var">df</span>[<span class="str">'match'</span>].<span class="fn">mean</span>() * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span> <span class="sql-col">system_qty</span>=<span class="sql-col">physical_qty</span> <span class="sql-kw">THEN</span> <span class="num">1</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>)/<span class="sql-fn">COUNT</span>(*),<span class="num">2</span>)
+<span class="sql-kw">AS</span> inv_accuracy <span class="sql-kw">FROM</span> cycle_counts;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (system_qty) | B (physical_qty) | C (match?) |</span>
+<span class="cmt">C2:</span> <span class="xl-fn">=IF(</span><span class="xl-ref">A2</span>=<span class="xl-ref">B2</span>,<span class="xl-str">"Yes"</span>,<span class="xl-str">"No"</span><span class="xl-fn">)</span>
+<span class="xl-fn">=COUNTIF(</span><span class="xl-ref">C2:C100</span>,<span class="xl-str">"Yes"</span><span class="xl-fn">)/COUNTA(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)*100</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#14</span><span class="kpi-name">Cycle Count Accuracy</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Accuracy observed during regular cycle count checks.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Accurate counted items / Total counted) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Maintains high inventory record reliability.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">cca</span> = (<span class="var">df</span>[<span class="str">'accurate_items'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'total_counted'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">accurate_items</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">total_counted</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> cycle_count_accuracy
+<span class="sql-kw">FROM</span> cycle_counts;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=accurate, B=total counted)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#15</span><span class="kpi-name">Safety Stock Coverage</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Days that safety stock can cover expected demand.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Safety stock / Average demand per day</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Shows buffer protection against supply/demand variability.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'ss_coverage_days'</span>] = <span class="var">df</span>[<span class="str">'safety_stock'</span>] / <span class="var">df</span>[<span class="str">'avg_daily_demand'</span>]</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-col">sku</span>, <span class="sql-fn">ROUND</span>(<span class="sql-col">safety_stock</span>/<span class="sql-col">avg_daily_demand</span>, <span class="num">1</span>) <span class="sql-kw">AS</span> ss_coverage_days
+<span class="sql-kw">FROM</span> inventory_params;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (safety_stock) | B (avg_daily_demand) |</span>
+<span class="xl-fn">=</span><span class="xl-ref">A2</span><span class="xl-fn">/</span><span class="xl-ref">B2</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#16</span><span class="kpi-name">Inventory Days of Supply</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Days current inventory can support forecast demand.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Current inventory / Average daily demand</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Useful for replenishment and short-term planning.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'dos'</span>] = <span class="var">df</span>[<span class="str">'current_inventory'</span>] / <span class="var">df</span>[<span class="str">'avg_daily_demand'</span>]</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-col">sku</span>, <span class="sql-fn">ROUND</span>(<span class="sql-col">current_inventory</span>/<span class="sql-col">avg_daily_demand</span>,<span class="num">1</span>) <span class="sql-kw">AS</span> days_of_supply
+<span class="sql-kw">FROM</span> inventory;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=</span><span class="xl-ref">A2</span><span class="xl-fn">/</span><span class="xl-ref">B2</span>  <span class="cmt">(A=current_inv, B=avg_daily_demand)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#17</span><span class="kpi-name">Slow-Moving Inventory Rate</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of inventory moving below expected threshold.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Slow-moving inv value / Total inv value) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Identifies inefficient stock holding.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">slow</span> = <span class="var">df</span>[<span class="var">df</span>[<span class="str">'velocity'</span>] < <span class="var">threshold</span>][<span class="str">'inv_value'</span>].<span class="fn">sum</span>()
+<span class="var">smr</span> = (<span class="var">slow</span> / <span class="var">df</span>[<span class="str">'inv_value'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span> <span class="sql-col">velocity</span> < <span class="num">0.1</span> <span class="sql-kw">THEN</span> <span class="sql-col">inv_value</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">inv_value</span>),<span class="num">2</span>)
+<span class="sql-kw">AS</span> slow_moving_rate <span class="sql-kw">FROM</span> inventory;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (inv_value) | B (velocity) |</span>
+<span class="xl-fn">=SUMIF(</span><span class="xl-ref">B2:B100</span>,<span class="xl-str">"<0.1"</span>,<span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)*100</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#18</span><span class="kpi-name">Obsolete Inventory Rate</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of inventory that can no longer be sold or used.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Obsolete inv value / Total inv value) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Highlights waste and write-off exposure.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">obs_rate</span> = (<span class="var">df</span>[<span class="var">df</span>[<span class="str">'status'</span>]==<span class="str">'obsolete'</span>][<span class="str">'inv_value'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'inv_value'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span> <span class="sql-col">status</span>=<span class="str">'obsolete'</span> <span class="sql-kw">THEN</span> <span class="sql-col">inv_value</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">inv_value</span>),<span class="num">2</span>)
+<span class="sql-kw">AS</span> obsolete_rate <span class="sql-kw">FROM</span> inventory;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUMIF(</span><span class="xl-ref">B2:B100</span>,<span class="xl-str">"obsolete"</span>,<span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)*100</span>
+<span class="cmt">(A=inv_value, B=status)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#19</span><span class="kpi-name">Inventory Carrying Cost</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Total cost of holding inventory over a period.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Storage + Capital + Insurance + Obsolescence + Handling</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Makes inventory trade-offs visible in financial terms.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'carrying_cost'</span>] = (
+    <span class="var">df</span>[<span class="str">'storage'</span>] + <span class="var">df</span>[<span class="str">'capital'</span>] +
+    <span class="var">df</span>[<span class="str">'insurance'</span>] + <span class="var">df</span>[<span class="str">'obsolescence'</span>] + <span class="var">df</span>[<span class="str">'handling'</span>]
+)</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-col">storage_cost</span>+<span class="sql-col">capital_cost</span>+<span class="sql-col">insurance_cost</span>+<span class="sql-col">obsolescence_cost</span>+<span class="sql-col">handling_cost</span>
+<span class="sql-kw">AS</span> carrying_cost <span class="sql-kw">FROM</span> cost_summary;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (storage) | B (capital) | C (insur) | D (obso) | E (handling) |</span>
+<span class="xl-fn">=SUM(</span><span class="xl-ref">A2:E2</span><span class="xl-fn">)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#20</span><span class="kpi-name">Forecast Bias</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Systematic tendency of forecast to be above or below actual demand.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Sum(Forecast − Actual) over time</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Detects directional error in demand planning.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'bias'</span>] = <span class="var">df</span>[<span class="str">'forecast'</span>] - <span class="var">df</span>[<span class="str">'actual'</span>]
+<span class="var">total_bias</span> = <span class="var">df</span>[<span class="str">'bias'</span>].<span class="fn">sum</span>()  <span class="cmt"># positive = over-forecast</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">SUM</span>(<span class="sql-col">forecast</span> - <span class="sql-col">actual</span>) <span class="sql-kw">AS</span> forecast_bias
+<span class="sql-kw">FROM</span> demand_plan;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (forecast) | B (actual) | C (bias) |</span>
+<span class="cmt">C2:</span> <span class="xl-fn">=</span><span class="xl-ref">A2</span><span class="xl-fn">-</span><span class="xl-ref">B2</span>
+<span class="xl-fn">=SUM(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span>  <span class="cmt">total bias; =AVERAGE(C2:C100) for avg bias</span></div></div></div></div></div>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             CAT 3 — FORECASTING
+        ══════════════════════════════════════════ -->
+        <section class="category-section" id="cat3">
+          <h2 class="category-title"><span class="cat-dot" style="background:#d2a8ff"></span>3. Forecasting &amp; Planning KPIs</h2>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#21</span><span class="kpi-name">Forecast Accuracy</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Measures how close forecast values are to actual demand.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">1 − MAPE (or WAPE)</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Core KPI for demand planning performance.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">mape</span> = ((<span class="var">df</span>[<span class="str">'actual'</span>]-<span class="var">df</span>[<span class="str">'forecast'</span>]).<span class="fn">abs</span>()/<span class="var">df</span>[<span class="str">'actual'</span>]).<span class="fn">mean</span>() * <span class="num">100</span>
+<span class="var">fa</span> = <span class="num">100</span> - <span class="var">mape</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="num">100</span> - <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">AVG</span>(<span class="sql-fn">ABS</span>(<span class="sql-col">actual</span>-<span class="sql-col">forecast</span>)/<span class="sql-fn">NULLIF</span>(<span class="sql-col">actual</span>,<span class="num">0</span>)),<span class="num">2</span>) <span class="sql-kw">AS</span> forecast_accuracy
+<span class="sql-kw">FROM</span> demand_plan;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">MAPE in column C: =ABS(A2-B2)/A2  (A=actual, B=forecast)</span>
+<span class="cmt">Forecast Accuracy:</span>
+<span class="xl-fn">=1-AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span>  <span class="cmt">format as %</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#22</span><span class="kpi-name">MAPE</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Mean Absolute Percentage Error between forecast and actual.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Avg(|Actual − Forecast| / Actual) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Most common forecasting accuracy metric.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">mape</span> = ((<span class="var">df</span>[<span class="str">'actual'</span>]-<span class="var">df</span>[<span class="str">'forecast'</span>]).<span class="fn">abs</span>()/<span class="var">df</span>[<span class="str">'actual'</span>]).<span class="fn">mean</span>() * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">AVG</span>(<span class="sql-fn">ABS</span>(<span class="sql-col">actual</span>-<span class="sql-col">forecast</span>)/<span class="sql-fn">NULLIF</span>(<span class="sql-col">actual</span>,<span class="num">0</span>)),<span class="num">2</span>) <span class="sql-kw">AS</span> mape
+<span class="sql-kw">FROM</span> demand_plan;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =ABS(A2-B2)/A2  (A=actual, B=forecast)</span>
+<span class="xl-fn">=AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)*100</span>  <span class="cmt">= MAPE %</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#23</span><span class="kpi-name">WAPE</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Weighted Absolute Percentage Error weighted by actual volume.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Sum |errors| / Sum actual) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">More stable than MAPE for business reporting.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">wape</span> = ((<span class="var">df</span>[<span class="str">'actual'</span>]-<span class="var">df</span>[<span class="str">'forecast'</span>]).<span class="fn">abs</span>().<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'actual'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-fn">ABS</span>(<span class="sql-col">actual</span>-<span class="sql-col">forecast</span>))/<span class="sql-fn">SUM</span>(<span class="sql-col">actual</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> wape
+<span class="sql-kw">FROM</span> demand_plan;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =ABS(A2-B2)  (A=actual, B=forecast)</span>
+<span class="xl-fn">=SUM(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)*100</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#24</span><span class="kpi-name">MAE</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Mean Absolute Error — average absolute difference between forecast and actual.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Average(|Actual − Forecast|)</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Gives error in actual volume units.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">mae</span> = (<span class="var">df</span>[<span class="str">'actual'</span>]-<span class="var">df</span>[<span class="str">'forecast'</span>]).<span class="fn">abs</span>().<span class="fn">mean</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">AVG</span>(<span class="sql-fn">ABS</span>(<span class="sql-col">actual</span>-<span class="sql-col">forecast</span>)) <span class="sql-kw">AS</span> mae <span class="sql-kw">FROM</span> demand_plan;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =ABS(A2-B2)</span>
+<span class="xl-fn">=AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#25</span><span class="kpi-name">RMSE</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Root Mean Squared Error — penalizes large misses more heavily.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">√(Average of squared errors)</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Useful when large forecast errors are especially costly.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="var">rmse</span> = np.<span class="fn">sqrt</span>((((<span class="var">df</span>[<span class="str">'actual'</span>]-<span class="var">df</span>[<span class="str">'forecast'</span>])**<span class="num">2</span>).<span class="fn">mean</span>()))</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">SQRT</span>(<span class="sql-fn">AVG</span>(<span class="sql-fn">POW</span>(<span class="sql-col">actual</span>-<span class="sql-col">forecast</span>,<span class="num">2</span>))) <span class="sql-kw">AS</span> rmse <span class="sql-kw">FROM</span> demand_plan;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =(A2-B2)^2</span>
+<span class="xl-fn">=SQRT(AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">))</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#26</span><span class="kpi-name">Demand Plan Attainment</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Degree to which actual demand aligns with the demand plan.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Actual demand / Planned demand) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Shows planning realism and execution alignment.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">dpa</span> = (<span class="var">df</span>[<span class="str">'actual_demand'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'planned_demand'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">actual_demand</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">planned_demand</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> dpa
+<span class="sql-kw">FROM</span> demand_plan;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=actual, B=planned)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#27</span><span class="kpi-name">Supply Plan Attainment</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Degree to which actual supply execution meets the agreed supply plan.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Actual supply / Planned supply) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Tracks planning discipline and operational consistency.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">spa</span> = (<span class="var">df</span>[<span class="str">'actual_supply'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'planned_supply'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">actual_supply</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">planned_supply</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> spa
+<span class="sql-kw">FROM</span> supply_plan;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#28</span><span class="kpi-name">Production Plan Adherence</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of production completed as originally scheduled.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Scheduled production executed / Total planned) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Reveals scheduling stability and execution quality.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">ppa</span> = (<span class="var">df</span>[<span class="str">'executed_as_scheduled'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'total_planned'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">executed_as_scheduled</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">total_planned</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> ppa
+<span class="sql-kw">FROM</span> production_schedule;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#29</span><span class="kpi-name">Replenishment Lead Time</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Average time between placing a replenishment order and receiving stock.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Receipt date − Replenishment order date</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Essential for reorder point and inventory planning.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'replen_lt'</span>] = (<span class="var">df</span>[<span class="str">'receipt_date'</span>]-<span class="var">df</span>[<span class="str">'order_date'</span>]).<span class="fn">dt</span>.<span class="fn">days</span>
+<span class="var">avg_lt</span> = <span class="var">df</span>[<span class="str">'replen_lt'</span>].<span class="fn">mean</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">AVG</span>(<span class="sql-fn">DATEDIFF</span>(<span class="sql-col">receipt_date</span>,<span class="sql-col">order_date</span>)) <span class="sql-kw">AS</span> avg_replen_lt
+<span class="sql-kw">FROM</span> replenishment_orders;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =B2-A2  (A=order_date, B=receipt_date)</span>
+<span class="xl-fn">=AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#30</span><span class="kpi-name">Planning Cycle Time</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Time required to complete a planning cycle (e.g., S&OP).</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Planning completion date − Planning start date</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Shows efficiency of planning processes.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'cycle_time'</span>] = (<span class="var">df</span>[<span class="str">'completion_date'</span>]-<span class="var">df</span>[<span class="str">'start_date'</span>]).<span class="fn">dt</span>.<span class="fn">days</span>
+<span class="var">avg_ct</span> = <span class="var">df</span>[<span class="str">'cycle_time'</span>].<span class="fn">mean</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">AVG</span>(<span class="sql-fn">DATEDIFF</span>(<span class="sql-col">completion_date</span>,<span class="sql-col">start_date</span>)) <span class="sql-kw">AS</span> avg_cycle_time
+<span class="sql-kw">FROM</span> planning_cycles;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =B2-A2</span>
+<span class="xl-fn">=AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span></div></div></div></div></div>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             CAT 4 — PROCUREMENT
+        ══════════════════════════════════════════ -->
+        <section class="category-section" id="cat4">
+          <h2 class="category-title"><span class="cat-dot" style="background:#ffa657"></span>4. Procurement &amp; Supplier KPIs</h2>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#31</span><span class="kpi-name">Supplier On-Time Delivery</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of supplier deliveries arriving on or before expected date.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(On-time supplier deliveries / Total deliveries) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Measures supplier reliability.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">sotd</span> = (<span class="var">df</span>[<span class="var">df</span>[<span class="str">'receipt_date'</span>]<=<span class="var">df</span>[<span class="str">'expected_date'</span>]].<span class="fn">shape</span>[<span class="num">0</span>] / <span class="fn">len</span>(<span class="var">df</span>)) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span> <span class="sql-col">receipt_date</span><=<span class="sql-col">expected_date</span> <span class="sql-kw">THEN</span> <span class="num">1</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>)/<span class="sql-fn">COUNT</span>(*),<span class="num">2</span>)
+<span class="sql-kw">AS</span> supplier_otd <span class="sql-kw">FROM</span> supplier_deliveries;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =IF(B2<=A2,"Yes","No")  (A=expected, B=receipt)</span>
+<span class="xl-fn">=COUNTIF(</span><span class="xl-ref">C2:C100</span>,<span class="xl-str">"Yes"</span><span class="xl-fn">)/COUNTA(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)*100</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#32</span><span class="kpi-name">Supplier In-Full Delivery</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of supplier deliveries received in full quantity.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Supplier deliveries in full / Total deliveries) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Tracks upstream service consistency.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">sif</span> = (<span class="var">df</span>[<span class="var">df</span>[<span class="str">'qty_received'</span>]>=<span class="var">df</span>[<span class="str">'qty_ordered'</span>]].<span class="fn">shape</span>[<span class="num">0</span>] / <span class="fn">len</span>(<span class="var">df</span>)) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span> <span class="sql-col">qty_received</span>>=<span class="sql-col">qty_ordered</span> <span class="sql-kw">THEN</span> <span class="num">1</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>)/<span class="sql-fn">COUNT</span>(*),<span class="num">2</span>)
+<span class="sql-kw">AS</span> supplier_if <span class="sql-kw">FROM</span> supplier_deliveries;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=COUNTIF(</span><span class="xl-ref">C2:C100</span>,<span class="xl-str">"Yes"</span><span class="xl-fn">)/COUNTA(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)*100</span>
+<span class="cmt">C2: =IF(B2>=A2,"Yes","No")  (A=ordered, B=received)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#33</span><span class="kpi-name">Supplier OTIF</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of supplier deliveries received both on time and in full.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Supplier OT & IF deliveries / Total) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Best single KPI for supplier execution performance.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'s_otif'</span>] = (<span class="var">df</span>[<span class="str">'receipt_date'</span>]<=<span class="var">df</span>[<span class="str">'expected_date'</span>]) & (<span class="var">df</span>[<span class="str">'qty_received'</span>]>=<span class="var">df</span>[<span class="str">'qty_ordered'</span>])
+<span class="var">s_otif</span> = <span class="var">df</span>[<span class="str">'s_otif'</span>].<span class="fn">mean</span>() * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span>
+  <span class="sql-col">receipt_date</span><=<span class="sql-col">expected_date</span> <span class="sql-kw">AND</span> <span class="sql-col">qty_received</span>>=<span class="sql-col">qty_ordered</span>
+<span class="sql-kw">THEN</span> <span class="num">1</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>)/<span class="sql-fn">COUNT</span>(*),<span class="num">2</span>) <span class="sql-kw">AS</span> supplier_otif
+<span class="sql-kw">FROM</span> supplier_deliveries;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">E2: =IF(AND(B2<=A2,D2>=C2),"Yes","No")</span>
+<span class="xl-fn">=COUNTIF(</span><span class="xl-ref">E2:E100</span>,<span class="xl-str">"Yes"</span><span class="xl-fn">)/COUNTA(</span><span class="xl-ref">E2:E100</span><span class="xl-fn">)*100</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#34</span><span class="kpi-name">Purchase Price Variance (PPV)</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Difference between standard purchase cost and actual purchase cost.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Actual price − Standard price) × Quantity</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Measures procurement cost control.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'ppv'</span>] = (<span class="var">df</span>[<span class="str">'actual_price'</span>] - <span class="var">df</span>[<span class="str">'standard_price'</span>]) * <span class="var">df</span>[<span class="str">'qty_purchased'</span>]
+<span class="var">total_ppv</span> = <span class="var">df</span>[<span class="str">'ppv'</span>].<span class="fn">sum</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">SUM</span>((<span class="sql-col">actual_price</span>-<span class="sql-col">standard_price</span>)*<span class="sql-col">qty_purchased</span>) <span class="sql-kw">AS</span> total_ppv
+<span class="sql-kw">FROM</span> purchase_orders;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">D2: =(B2-A2)*C2  (A=std_price, B=actual_price, C=qty)</span>
+<span class="xl-fn">=SUM(</span><span class="xl-ref">D2:D100</span><span class="xl-fn">)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#35</span><span class="kpi-name">Supplier Defect Rate</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of supplier units received with defects or quality issues.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Defective received units / Total received) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Links supplier quality to operational performance.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">defect_rate</span> = (<span class="var">df</span>[<span class="str">'defective_units'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'received_units'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">defective_units</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">received_units</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> defect_rate
+<span class="sql-kw">FROM</span> supplier_receipts;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=defective, B=received)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#36</span><span class="kpi-name">Supplier Lead Time</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Average time from PO issuance to supplier delivery.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Goods receipt date − PO date</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Critical for procurement planning and service.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'supplier_lt'</span>] = (<span class="var">df</span>[<span class="str">'goods_receipt_date'</span>]-<span class="var">df</span>[<span class="str">'po_date'</span>]).<span class="fn">dt</span>.<span class="fn">days</span>
+<span class="var">avg_slt</span> = <span class="var">df</span>[<span class="str">'supplier_lt'</span>].<span class="fn">mean</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">AVG</span>(<span class="sql-fn">DATEDIFF</span>(<span class="sql-col">goods_receipt_date</span>,<span class="sql-col">po_date</span>)) <span class="sql-kw">AS</span> avg_supplier_lt
+<span class="sql-kw">FROM</span> purchase_orders;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =B2-A2  (A=po_date, B=receipt_date)</span>
+<span class="xl-fn">=AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#37</span><span class="kpi-name">Purchase Order Cycle Time</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Time required to create, approve, issue, and receive a PO.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">PO completion date − PO initiation date</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Indicates procurement process efficiency.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'po_cycle'</span>] = (<span class="var">df</span>[<span class="str">'completion_date'</span>]-<span class="var">df</span>[<span class="str">'initiation_date'</span>]).<span class="fn">dt</span>.<span class="fn">days</span>
+<span class="var">avg_po_ct</span> = <span class="var">df</span>[<span class="str">'po_cycle'</span>].<span class="fn">mean</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">AVG</span>(<span class="sql-fn">DATEDIFF</span>(<span class="sql-col">completion_date</span>,<span class="sql-col">initiation_date</span>)) <span class="sql-kw">AS</span> po_cycle_time
+<span class="sql-kw">FROM</span> purchase_orders;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =B2-A2  (A=initiation, B=completion)</span>
+<span class="xl-fn">=AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#38</span><span class="kpi-name">Contract Compliance Rate</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of spend made according to negotiated contracts.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Contract-compliant spend / Total spend) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Shows procurement discipline and savings capture.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">ccr</span> = (<span class="var">df</span>[<span class="var">df</span>[<span class="str">'on_contract'</span>]==<span class="kw">True</span>][<span class="str">'spend'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'spend'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span> <span class="sql-col">on_contract</span>=<span class="num">1</span> <span class="sql-kw">THEN</span> <span class="sql-col">spend</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">spend</span>),<span class="num">2</span>)
+<span class="sql-kw">AS</span> contract_compliance <span class="sql-kw">FROM</span> spend_data;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUMIF(</span><span class="xl-ref">B2:B100</span>,<span class="xl-str">"Yes"</span>,<span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)*100</span>
+<span class="cmt">(A=spend, B=on_contract Y/N)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#39</span><span class="kpi-name">Spend Under Management</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of total spend controlled through procurement processes.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Managed spend / Total spend) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Measures procurement influence and governance.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">sum_pct</span> = (<span class="var">df</span>[<span class="var">df</span>[<span class="str">'managed'</span>]==<span class="kw">True</span>][<span class="str">'spend'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'spend'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-kw">CASE WHEN</span> <span class="sql-col">managed</span>=<span class="num">1</span> <span class="sql-kw">THEN</span> <span class="sql-col">spend</span> <span class="sql-kw">ELSE</span> <span class="num">0</span> <span class="sql-kw">END</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">spend</span>),<span class="num">2</span>)
+<span class="sql-kw">AS</span> spend_under_mgmt <span class="sql-kw">FROM</span> spend_data;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUMIF(</span><span class="xl-ref">B2:B100</span>,<span class="xl-str">"Yes"</span>,<span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)*100</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#40</span><span class="kpi-name">Supplier Concentration Risk</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Share of spend concentrated in top suppliers.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Spend with top N suppliers / Total spend) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Reveals supply risk and single-source dependency.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">top_n</span> = <span class="var">df</span>.<span class="fn">groupby</span>(<span class="str">'supplier'</span>)[<span class="str">'spend'</span>].<span class="fn">sum</span>().<span class="fn">nlargest</span>(<span class="num">5</span>).<span class="fn">sum</span>()
+<span class="var">conc_risk</span> = (<span class="var">top_n</span> / <span class="var">df</span>[<span class="str">'spend'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">spend</span>)/(<span class="sql-kw">SELECT</span> <span class="sql-fn">SUM</span>(<span class="sql-col">spend</span>) <span class="sql-kw">FROM</span> spend_data),<span class="num">2</span>) <span class="sql-kw">AS</span> concentration
+<span class="sql-kw">FROM</span> (<span class="sql-kw">SELECT</span> <span class="sql-col">supplier</span>, <span class="sql-fn">SUM</span>(<span class="sql-col">spend</span>) <span class="sql-kw">AS</span> spend <span class="sql-kw">FROM</span> spend_data
+      <span class="sql-kw">GROUP BY</span> <span class="sql-col">supplier</span> <span class="sql-kw">ORDER BY</span> spend <span class="sql-kw">DESC LIMIT</span> <span class="num">5</span>) top5;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">Sort spend descending, then:</span>
+<span class="xl-fn">=SUM(</span><span class="xl-ref">B2:B6</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(top 5 rows / total spend)</span></div></div></div></div></div>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             CAT 5 — WAREHOUSE & LOGISTICS
+        ══════════════════════════════════════════ -->
+        <section class="category-section" id="cat5">
+          <h2 class="category-title"><span class="cat-dot" style="background:#ff7b72"></span>5. Warehouse &amp; Logistics KPIs</h2>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#41</span><span class="kpi-name">Warehouse Picking Accuracy</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of order lines picked correctly without error.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Correctly picked lines / Total picked) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Directly impacts service, returns, and customer satisfaction.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">wpa</span> = (<span class="var">df</span>[<span class="str">'correct_lines'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'total_lines'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">correct_lines</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">total_lines</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> picking_accuracy
+<span class="sql-kw">FROM</span> warehouse_picks;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=correct, B=total)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#42</span><span class="kpi-name">Dock-to-Stock Time</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Time from inbound receipt at dock to stock availability in system.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Stock availability timestamp − Receipt timestamp</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Measures inbound warehouse efficiency.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'dts_hours'</span>] = (<span class="var">df</span>[<span class="str">'stock_avail_ts'</span>]-<span class="var">df</span>[<span class="str">'receipt_ts'</span>]).<span class="fn">dt</span>.<span class="fn">total_seconds</span>() / <span class="num">3600</span>
+<span class="var">avg_dts</span> = <span class="var">df</span>[<span class="str">'dts_hours'</span>].<span class="fn">mean</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">AVG</span>(<span class="sql-fn">TIMESTAMPDIFF</span>(<span class="cls">HOUR</span>, <span class="sql-col">receipt_ts</span>, <span class="sql-col">stock_avail_ts</span>)) <span class="sql-kw">AS</span> avg_dts_hours
+<span class="sql-kw">FROM</span> inbound_receipts;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =(B2-A2)*24  (A=receipt_ts, B=avail_ts) → hours</span>
+<span class="xl-fn">=AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#43</span><span class="kpi-name">Warehouse Capacity Utilization</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of warehouse space or positions currently used.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Used capacity / Total capacity) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Balances congestion risk versus asset efficiency.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">util</span> = (<span class="var">df</span>[<span class="str">'used_positions'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'total_positions'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">used_positions</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">total_positions</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> capacity_utilization
+<span class="sql-kw">FROM</span> warehouse_snapshot;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=used, B=total)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#44</span><span class="kpi-name">Labor Productivity</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Output per labor hour in warehouse or logistics operations.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Units handled / Labor hours</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Tracks workforce efficiency.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">productivity</span> = <span class="var">df</span>[<span class="str">'units_handled'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'labor_hours'</span>].<span class="fn">sum</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(<span class="sql-col">units_handled</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">labor_hours</span>),<span class="num">1</span>) <span class="sql-kw">AS</span> units_per_hour
+<span class="sql-kw">FROM</span> labor_log;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)</span>  <span class="cmt">(A=units, B=hours)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#45</span><span class="kpi-name">Transportation Cost per Unit</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Logistics transportation cost per shipped unit/case/pallet.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Total transport cost / Total shipped units</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Makes transport efficiency easy to compare over time.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">cost_per_unit</span> = <span class="var">df</span>[<span class="str">'transport_cost'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'shipped_units'</span>].<span class="fn">sum</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(<span class="sql-col">transport_cost</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">shipped_units</span>),<span class="num">4</span>) <span class="sql-kw">AS</span> cost_per_unit
+<span class="sql-kw">FROM</span> shipments;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)</span>  <span class="cmt">(A=cost, B=units)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#46</span><span class="kpi-name">Freight Cost as % of Sales</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Share of revenue consumed by freight spending.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Freight cost / Net sales) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Connects logistics cost to commercial performance.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">fc_pct</span> = (<span class="var">df</span>[<span class="str">'freight_cost'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'net_sales'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">freight_cost</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">net_sales</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> freight_pct_sales
+<span class="sql-kw">FROM</span> financials;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=freight, B=net_sales)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#47</span><span class="kpi-name">Truck Fill Rate</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of vehicle capacity utilized in shipments.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Loaded volume or weight / Total truck capacity) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Reflects transport asset utilization.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">tfr</span> = (<span class="var">df</span>[<span class="str">'loaded_weight'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'truck_capacity'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">loaded_weight</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">truck_capacity</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> truck_fill_rate
+<span class="sql-kw">FROM</span> shipments;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=loaded, B=capacity)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#48</span><span class="kpi-name">Average Delivery Lead Time</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Average transit time from dispatch to customer delivery.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Delivery date − Shipment date</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Shows transportation speed and consistency.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'transit_days'</span>] = (<span class="var">df</span>[<span class="str">'delivery_date'</span>]-<span class="var">df</span>[<span class="str">'shipment_date'</span>]).<span class="fn">dt</span>.<span class="fn">days</span>
+<span class="var">avg_dlt</span> = <span class="var">df</span>[<span class="str">'transit_days'</span>].<span class="fn">mean</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">AVG</span>(<span class="sql-fn">DATEDIFF</span>(<span class="sql-col">delivery_date</span>,<span class="sql-col">shipment_date</span>)) <span class="sql-kw">AS</span> avg_delivery_lt
+<span class="sql-kw">FROM</span> shipments;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">C2: =B2-A2  (A=ship_date, B=delivery_date)</span>
+<span class="xl-fn">=AVERAGE(</span><span class="xl-ref">C2:C100</span><span class="xl-fn">)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#49</span><span class="kpi-name">Damage Rate in Transit</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">% of shipments or units damaged during transport.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">(Damaged units / Total shipped units) × 100</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Measures handling and transportation quality.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">damage_rate</span> = (<span class="var">df</span>[<span class="str">'damaged_units'</span>].<span class="fn">sum</span>() / <span class="var">df</span>[<span class="str">'shipped_units'</span>].<span class="fn">sum</span>()) * <span class="num">100</span></div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-fn">ROUND</span>(<span class="num">100.0</span>*<span class="sql-fn">SUM</span>(<span class="sql-col">damaged_units</span>)/<span class="sql-fn">SUM</span>(<span class="sql-col">shipped_units</span>),<span class="num">2</span>) <span class="sql-kw">AS</span> damage_rate
+<span class="sql-kw">FROM</span> shipments;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="xl-fn">=SUM(</span><span class="xl-ref">A2:A100</span><span class="xl-fn">)/SUM(</span><span class="xl-ref">B2:B100</span><span class="xl-fn">)*100</span>  <span class="cmt">(A=damaged, B=shipped)</span></div></div></div></div></div>
+
+          <div class="kpi-card" onclick="toggle(this)"><div class="kpi-header"><span class="kpi-number">#50</span><span class="kpi-name">Logistics Cost to Serve</span><span class="kpi-toggle">›</span></div><div class="kpi-body"><div class="kpi-meta"><div class="meta-box"><div class="meta-label">Definition</div><div class="meta-value">Total logistics cost to serve a customer, product, channel, or region.</div></div><div class="meta-box"><div class="meta-label">Formula</div><div class="meta-value">Transport + Warehousing + Handling + Delivery costs</div></div><div class="meta-box"><div class="meta-label">Why It Matters</div><div class="meta-value">Supports profitability analysis and network decisions.</div></div></div><div class="code-section"><div class="code-label">How to calculate</div><div class="code-tabs-nav"><button class="code-tab-btn py active" onclick="switchTab(event,'py')">Python</button><button class="code-tab-btn sql" onclick="switchTab(event,'sql')">SQL</button><button class="code-tab-btn xl" onclick="switchTab(event,'xl')">Excel</button></div><div class="code-tab-pane active" data-lang="py"><div class="code-block"><span class="var">df</span>[<span class="str">'cost_to_serve'</span>] = (
+    <span class="var">df</span>[<span class="str">'transport'</span>] + <span class="var">df</span>[<span class="str">'warehousing'</span>] +
+    <span class="var">df</span>[<span class="str">'handling'</span>] + <span class="var">df</span>[<span class="str">'delivery'</span>]
+)
+<span class="var">cts_by_customer</span> = <span class="var">df</span>.<span class="fn">groupby</span>(<span class="str">'customer'</span>)[<span class="str">'cost_to_serve'</span>].<span class="fn">sum</span>()</div></div><div class="code-tab-pane" data-lang="sql"><div class="code-block"><span class="sql-kw">SELECT</span> <span class="sql-col">customer</span>,
+  <span class="sql-fn">SUM</span>(<span class="sql-col">transport_cost</span>+<span class="sql-col">warehousing_cost</span>+<span class="sql-col">handling_cost</span>+<span class="sql-col">delivery_cost</span>) <span class="sql-kw">AS</span> cost_to_serve
+<span class="sql-kw">FROM</span> logistics_costs
+<span class="sql-kw">GROUP BY</span> <span class="sql-col">customer</span>
+<span class="sql-kw">ORDER BY</span> cost_to_serve <span class="sql-kw">DESC</span>;</div></div><div class="code-tab-pane" data-lang="xl"><div class="code-block"><span class="cmt">| A (transport) | B (warehouse) | C (handling) | D (delivery) |</span>
+<span class="xl-fn">=SUM(</span><span class="xl-ref">A2:D2</span><span class="xl-fn">)</span>  <span class="cmt">per row; then SUMIF by customer/channel</span></div></div></div></div></div>
+        </section>
+
+      </div><!-- /.readme-body -->
+      <div class="readme-footer">50 Supply Chain KPIs · Python · SQL · Excel · Built for analytics and dashboard projects</div>
+    </div><!-- /.readme -->
+  </main>
+
+</div><!-- /.container -->
+
+<script>
+  function toggle(card) {
+    // Don't toggle if click was on a tab button
+    if (event.target.closest('.code-tab-btn')) return;
+    card.classList.toggle('open');
+  }
+
+  function switchTab(e, lang) {
+    e.stopPropagation();
+    const card = e.target.closest('.kpi-card');
+    card.querySelectorAll('.code-tab-btn').forEach(b => b.classList.remove('active'));
+    card.querySelectorAll('.code-tab-pane').forEach(p => p.classList.remove('active'));
+    e.target.classList.add('active');
+    card.querySelector(`.code-tab-pane[data-lang="${lang}"]`).classList.add('active');
+  }
+
+  function scrollTo(id) {
+    document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>
