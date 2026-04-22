@@ -1,4 +1,4 @@
-# 📦 Supply Chain KPI Reference
+#  Supply Chain KPI Reference
 
 A structured, interactive reference of **50 supply chain KPIs** built as a GitHub Page — designed for analysts, planners, and supply chain professionals who want a fast, reliable lookup for metrics that matter.
 
@@ -34,12 +34,12 @@ Definitions vary across teams, formulas get lost in spreadsheets, and implementa
 | Warehouse & Logistics | Picking Accuracy, Labor Productivity, Cost to Serve, and more |
 
 **Each KPI includes:**
-- 📌 Definition
-- 🔢 Formula
-- 💡 Why it matters
-- 🐍 Python implementation
-- 🗄️ SQL implementation
-- 📊 Excel implementation
+- Definition
+- Formula
+- Why it matters
+- Python implementation
+- SQL implementation
+- Excel implementation
 
 ---
 
